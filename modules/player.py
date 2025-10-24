@@ -14,7 +14,6 @@ from gi.repository import Gdk, Gio, GLib, Gtk
 
 import config.data as data
 import modules.icons as icons
-from modules.cavalcade import SpectrumRender
 from services.mpris import MprisPlayer, MprisPlayerManager
 from widgets.circle_image import CircleImage
 
@@ -499,9 +498,9 @@ class PlayerSmall(CenterBox):
     def __init__(self):
         super().__init__(name="player-small", orientation="h", h_align="fill", v_align="center")
         self._show_artist = False
-        self._display_options = ["cavalcade", "title", "artist"]
+        self._display_options = ["title", "artist"]
         self._display_index = 0
-        self._current_display = "cavalcade"
+        self._current_display = "title"
 
         self.mpris_icon = Button(
             name="compact-mpris-icon",
@@ -537,9 +536,6 @@ class PlayerSmall(CenterBox):
 
         add_hover_cursor(self.mpris_button)
 
-        self.cavalcade = SpectrumRender()
-        self.cavalcade_box = self.cavalcade.get_spectrum_box()
-
         self.center_stack = Stack(
             name="compact-mpris",
             transition_type="crossfade",
@@ -547,11 +543,10 @@ class PlayerSmall(CenterBox):
             v_align="center",
             v_expand=False,
             children=[
-                self.cavalcade_box,
                 self.mpris_label,
             ]
         )
-        self.center_stack.set_visible_child(self.cavalcade_box)
+        self.center_stack.set_visible_child(self.mpris_label)
 
         self.mpris_small = CenterBox(
             name="compact-mpris",
@@ -590,10 +585,7 @@ class PlayerSmall(CenterBox):
             self.mpris_label.set_text("Nothing Playing")
             self.mpris_button.get_child().set_markup(icons.stop)
             self.mpris_icon.get_child().set_markup(icons.disc)
-            if self._current_display != "cavalcade":
-                self.center_stack.set_visible_child(self.mpris_label)
-            else:
-                self.center_stack.set_visible_child(self.cavalcade_box)
+            self.center_stack.set_visible_child(self.mpris_label)
             return
 
         mp = self.mpris_player
@@ -611,8 +603,6 @@ class PlayerSmall(CenterBox):
             text = (mp.artist if mp.artist else "Nothing Playing")
             self.mpris_label.set_text(text)
             self.center_stack.set_visible_child(self.mpris_label)
-        else:
-            self.center_stack.set_visible_child(self.cavalcade_box)
 
     def _on_icon_button_press(self, widget, event):
         from gi.repository import Gdk
